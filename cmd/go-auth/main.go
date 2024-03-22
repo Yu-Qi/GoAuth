@@ -16,7 +16,9 @@ func main() {
 	r.Use(
 		middleware.HandlePanic,
 	)
-	crypto.InitService("your-strong-password", "your-salt-string", 4096, 600)
+
+	verificationCodeExpireSec := 600
+	crypto.InitService("your-strong-password", "your-salt-string", 4096, verificationCodeExpireSec)
 	email.InitService(email.NewPrintEmailService())
 
 	registerAccountAPI(r)
