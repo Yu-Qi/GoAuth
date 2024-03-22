@@ -2,6 +2,7 @@ package products
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -23,7 +24,12 @@ func GetRecommendations(ctx context.Context) ([]domain.Product, *code.CustomErro
 		if err != nil {
 			return nil, code.NewCustomError(code.CacheError, http.StatusInternalServerError, err)
 		}
-		return v.([]domain.Product), nil
+		products := []domain.Product{}
+		err = json.Unmarshal([]byte(v.(string)), &products)
+		if err != nil {
+			return nil, code.NewCustomError(code.JsonUnmarshalErr, http.StatusInternalServerError, err)
+		}
+		return products, nil
 	}
 
 	// if not hit cache, get from db and set cache
@@ -31,7 +37,11 @@ func GetRecommendations(ctx context.Context) ([]domain.Product, *code.CustomErro
 	if customErr != nil {
 		return nil, customErr
 	}
-	cache.Set(ctx, cache.CacheKeyProductRecommendation, products, ProductRecommendationCacheTTLSec*time.Second)
+
+	err := cache.SetWithObject(ctx, cache.CacheKeyProductRecommendation, products, ProductRecommendationCacheTTLSec*time.Second)
+	if err != nil {
+		return nil, code.NewCustomError(code.CacheError, http.StatusInternalServerError, err)
+	}
 
 	return products, nil
 }

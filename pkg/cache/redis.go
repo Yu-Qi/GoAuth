@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -81,14 +82,33 @@ func Get(ctx context.Context, key string) (interface{}, error) {
 	return (*cmd).Result()
 }
 
-// Set set value to redis
-func Set(ctx context.Context, key string, value interface{}, duration time.Duration) string {
+// Set set string to redis
+func Set(ctx context.Context, key string, value interface{}, duration time.Duration) error {
 	if Client == nil {
 		panic("redis client is nil")
 	}
 	cmd := Client.Set(ctx, key, value, duration)
 	if cmd == nil {
-		return ""
+		return nil
 	}
-	return (*cmd).Val()
+
+	return (*cmd).Err()
+}
+
+// SetWithObject set object to redis
+func SetWithObject(ctx context.Context, key string, value interface{}, duration time.Duration) error {
+	objectJson, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+
+	if Client == nil {
+		panic("redis client is nil")
+	}
+	cmd := Client.Set(ctx, key, objectJson, duration)
+	if cmd == nil {
+		return nil
+	}
+
+	return (*cmd).Err()
 }

@@ -15,6 +15,8 @@ const (
 	CacheError       = 1004
 	UserNotFound     = 1005
 	InvalidSignature = 1006
+	JsonMarshalError = 1007
+	JsonUnmarshalErr = 1008
 	// business errors
 	AccountAlreadyExists       = 2000
 	AccountOrPasswordIncorrect = 2001
