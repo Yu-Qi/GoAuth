@@ -7,6 +7,7 @@ import (
 
 	"github.com/Yu-Qi/GoAuth/api"
 	"github.com/Yu-Qi/GoAuth/api/middleware"
+	"github.com/Yu-Qi/GoAuth/pkg/email"
 	"github.com/Yu-Qi/GoAuth/pkg/service/crypto"
 )
 
@@ -15,7 +16,8 @@ func main() {
 	r.Use(
 		middleware.HandlePanic,
 	)
-	crypto.Init("your-strong-password", "your-salt-string", 4096, 600)
+	crypto.InitService("your-strong-password", "your-salt-string", 4096, 600)
+	email.InitService(email.NewPrintEmailService())
 
 	registerAccountAPI(r)
 	registerProductAPI(r)

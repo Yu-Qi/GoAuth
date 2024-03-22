@@ -10,12 +10,6 @@ import (
 	"github.com/Yu-Qi/GoAuth/pkg/db/model"
 )
 
-// IsAccountExist checks if an account already exists
-func IsAccountExist(account string) bool {
-	// TODO: implement
-	return true
-}
-
 // CreateAccountParams is the parameters for creating an account
 type CreateAccountParams struct {
 	UID            string

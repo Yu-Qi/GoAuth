@@ -23,8 +23,8 @@ var (
 	service *VerificationCodeService
 )
 
-// Init initializes the verification code service
-func Init(secretKey, salt string, iters, expireSec int) {
+// InitService initializes the verification code service
+func InitService(secretKey, salt string, iters, expireSec int) {
 	service = &VerificationCodeService{
 		secretKey: secretKey,
 		salt:      salt,

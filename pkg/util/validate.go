@@ -1,13 +1,32 @@
 package util
 
+import "regexp"
+
+var (
+	uppercasePattern   = regexp.MustCompile(`[A-Z]`)
+	lowercasePattern   = regexp.MustCompile(`[a-z]`)
+	specialCharPattern = regexp.MustCompile(`[\(\)\[\]\{\}<>+\-*/?,.:;"'_\\|~` + "`" + `!@#$%^&=]`)
+)
+
 // ValidateEmail check if it is in the correct format
 func ValidateEmail(email string) bool {
-	// TODO: implement
-	return true
+	var emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+
+	return emailRegex.MatchString(email)
 }
 
 // ValidatePassword check if it matches the requirement
 func ValidatePassword(password string) bool {
-	// TODO: implement
-	return true
+	// rules:
+	// 1. password must be at least 6 characters and no more than 16 characters
+	// 2. password must contain at least one uppercase letter and one lowercase letter
+	// 3. password must contain at least one special character ()[]{}<>+-*/?,.:;"'_\|~`!@#$%^&=
+
+	if len(password) < 6 || len(password) > 16 {
+		return false
+	}
+
+	return uppercasePattern.MatchString(password) &&
+		lowercasePattern.MatchString(password) &&
+		specialCharPattern.MatchString(password)
 }

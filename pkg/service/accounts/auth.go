@@ -8,6 +8,7 @@ import (
 	"github.com/Yu-Qi/GoAuth/domain"
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/db"
+	"github.com/Yu-Qi/GoAuth/pkg/email"
 	"github.com/Yu-Qi/GoAuth/pkg/log"
 	"github.com/Yu-Qi/GoAuth/pkg/service/crypto"
 	"github.com/Yu-Qi/GoAuth/pkg/util"
@@ -29,15 +30,17 @@ func Register(ctx context.Context, account *RegisterParams) (customErr *code.Cus
 
 	// validate email
 	if !util.ValidateEmail(account.Email) {
-		return
+		return code.NewCustomError(code.ParamIncorrect, http.StatusBadRequest, fmt.Errorf("invalid email"))
 	}
 	// validate password
 	if !util.ValidatePassword(account.Password) {
-		return
+		return code.NewCustomError(code.ParamIncorrect, http.StatusBadRequest, fmt.Errorf("invalid password"))
 	}
 	hashedPassword, err := util.GenerateBcryptPassword(account.Password)
 	if err != nil {
-		// TODO: 處理
+		log.WarningWithDataCtx(ctx, "Register, GenerateBcryptPassword", map[string]interface{}{
+			"error": err,
+		})
 		return
 	}
 
@@ -55,8 +58,7 @@ func Register(ctx context.Context, account *RegisterParams) (customErr *code.Cus
 		return code.NewCustomError(code.CryptoError, http.StatusInternalServerError, err)
 	}
 
-	// TODO: send email
-	fmt.Println("~~~verificationCode", verificationCode)
+	email.GetService().SendEmail(account.Email, "Verification Code", verificationCode)
 	return nil
 }
 
