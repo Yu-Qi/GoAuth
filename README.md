@@ -60,3 +60,7 @@ curl --location 'localhost:9030/login' \
 curl --location 'localhost:9030/products/recommendation' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwczovL2FsYW5jaGVuLmNvbSIsImV4cCI6MTcxMTE3ODk0NiwianRpIjoiNTNkOTBlYTktYmI2Ni00YjkwLWJkZjEtMjZkZjgyMmY3M2I3IiwiaWF0IjoxNzExMDkyNTQ2LCJpc3MiOiJBbGFuIGNoZW4iLCJuYmYiOjE3MTEwOTI1NDYsInN1YiI6IjI3MDA2YWE2LWI5NTctNDY0My05MTI5LTQ2NWNiNWYyNDZjYyJ9.QWIQQ3VcZkgJFLrskGDEJk4tAjKSE8RaxmkszBWnEdE'
 ```
+
+### TODO
+
+- [ ] 當 redis 資料失效時，避免併發的請求同時向資料庫取得資料
