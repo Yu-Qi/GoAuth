@@ -6,11 +6,11 @@ import (
 	"time"
 
 	em "emperror.dev/errors"
-
-	"github.com/Yu-Qi/restful_api/pkg/code"
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
+	"github.com/Yu-Qi/GoAuth/pkg/code"
 )
 
 // ErrorResp is the error response struct.

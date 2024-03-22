@@ -6,11 +6,23 @@ import (
 
 // constants
 const (
-	OK                   = 0
-	ParamIncorrect       = 1000
-	NotFound             = 1001
-	Timeout              = 1002
-	InternalUnknownError = 2999
+	OK = 0
+	// general errors
+	ParamIncorrect   = 1000
+	NotFound         = 1001
+	DBError          = 1002
+	TokenInValid     = 1003
+	CacheError       = 1004
+	UserNotFound     = 1005
+	InvalidSignature = 1006
+	// business errors
+	AccountAlreadyExists       = 2000
+	AccountOrPasswordIncorrect = 2001
+	AccountNotActive           = 2002
+	AccountAlreadyActive       = 2003
+	// internal errors
+	CryptoError          = 3000
+	InternalUnknownError = 3999
 )
 
 // define errors

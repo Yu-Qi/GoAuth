@@ -7,9 +7,10 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/Yu-Qi/restful_api/pkg/code"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+
+	"github.com/Yu-Qi/GoAuth/pkg/code"
 )
 
 // AfterBinding is a function that gets called after the successful binding prvovied by GinContextExt.
