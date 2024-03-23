@@ -3,9 +3,10 @@ package products
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
+
+	"golang.org/x/sync/singleflight"
 
 	"github.com/Yu-Qi/GoAuth/domain"
 	"github.com/Yu-Qi/GoAuth/pkg/cache"
@@ -13,42 +14,47 @@ import (
 	"github.com/Yu-Qi/GoAuth/pkg/db"
 )
 
+var (
+	g singleflight.Group
+)
+
 const (
-	// ProductRecommendationCacheTTLSec = 60 * 10 //TODO:
-	ProductRecommendationCacheTTLSec = 30
+	ProductRecommendationCacheTTLSec = 60 * 10
 )
 
 // GetRecommendations gets product recommendations from cache or db
-func GetRecommendations(ctx context.Context) ([]domain.Product, *code.CustomError) {
-	fmt.Println(time.Now(), "GetRecommendations")
-
+func GetRecommendations(ctx context.Context) (products []domain.Product, customErr *code.CustomError) {
 	// if hit cache
 	if cache.Exists(ctx, cache.CacheKeyProductRecommendation) {
-		fmt.Println(time.Now(), "cache.Exists")
-
 		v, err := cache.Get(ctx, cache.CacheKeyProductRecommendation)
 		if err != nil {
 			return nil, code.NewCustomError(code.CacheError, http.StatusInternalServerError, err)
 		}
-		products := []domain.Product{}
 		err = json.Unmarshal([]byte(v.(string)), &products)
 		if err != nil {
 			return nil, code.NewCustomError(code.JsonUnmarshalErr, http.StatusInternalServerError, err)
 		}
 		return products, nil
 	}
-	fmt.Println(time.Now(), "not hit cache!!!")
 
 	// if not hit cache, get from db and set cache
-	products, customErr := db.GetProductRecommendations(ctx)
-	if customErr != nil {
-		return nil, customErr
-	}
+	// use singleflight to avoid cache breakdown.
+	data, err, _ := g.Do("", func() (any, error) {
+		products, customErr = db.GetProductRecommendations(ctx)
+		if customErr != nil {
+			return nil, customErr.Error
+		}
 
-	err := cache.SetWithObject(ctx, cache.CacheKeyProductRecommendation, products, ProductRecommendationCacheTTLSec*time.Second)
+		err := cache.SetWithObject(ctx, cache.CacheKeyProductRecommendation, products, ProductRecommendationCacheTTLSec*time.Second)
+		if err != nil {
+			customErr = code.NewCustomError(code.CacheError, http.StatusInternalServerError, err)
+			return nil, err
+		}
+		return products, nil
+	})
 	if err != nil {
-		return nil, code.NewCustomError(code.CacheError, http.StatusInternalServerError, err)
+		return
 	}
 
-	return products, nil
+	return data.([]domain.Product), nil
 }
