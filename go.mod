@@ -15,6 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/zeromicro/go-zero v1.6.3
 	golang.org/x/crypto v0.19.0
+	golang.org/x/sync v0.6.0
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/gorm v1.25.8
 	gorm.io/plugin/opentelemetry v0.1.4

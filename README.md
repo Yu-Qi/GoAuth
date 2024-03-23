@@ -64,3 +64,5 @@ curl --location 'localhost:9030/products/recommendation' \
 ### TODO
 
 - [ ] 當 redis 資料失效時，避免併發的請求同時向資料庫取得資料
+
+### 效能測試
