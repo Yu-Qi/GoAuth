@@ -39,15 +39,23 @@
 ### `api`
 
 - `api` 為主要的服務入口，負責處理請求及回應
--
+- `api/middleware` 負責處理請求的 middleware，例如驗證 token、處理 panic 等
 
 ### `cmd`
 
+- `cmd` 為主要的程式進入點，例如啟動伺服器、執行資料庫遷移等
+
 ### `domain`
+
+- `domain` 為業務邏輯的核心，將各個 usecase 放在同個 package 中，避免 cycle import 的問題
 
 ### `config`
 
+- `config` 為設定檔的存放位置，例如資料庫連線、快取連線等，不同環境有對應的設定檔
+
 ### `test`
+
+- `test` 為外部測試的程式碼，例如 locust 測試
 
 ## 所需軟體/服務
 
@@ -166,6 +174,12 @@ curl 'localhost:9030/products/recommendation' \
   - 總共使用者: 600
   - 每秒新增使用者(Ramp up): 5
   - 每個使用者執行的任務數: 1 (已經寫在 locustfile.py 中)
+
+## 完成時間
+
+開發: 6hr
+測試: 4hr
+文件: 2hr
 
 ### TODO
 
