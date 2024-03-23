@@ -1,18 +1,26 @@
 package api
 
 import (
-	"github.com/Yu-Qi/GoAuth/api/response"
+	"net/http"
+
 	"github.com/Yu-Qi/GoAuth/pkg/service/products"
 	"github.com/gin-gonic/gin"
 )
 
 // GetRecommendations returns a list of recommended products
-func GetRecommendations(ctx *gin.Context) {
-	products, customErr := products.GetRecommendations(ctx)
+func GetRecommendations(c *gin.Context) {
+	products, customErr := products.GetRecommendations(c)
 
 	if customErr != nil {
-		response.CustomError(ctx, customErr)
+		c.JSON(customErr.HttpStatus, map[string]interface{}{
+			"status":  customErr.HttpStatus,
+			"code":    customErr.Code,
+			"message": customErr.Error.Error(),
+		})
 		return
 	}
-	response.OK(ctx, products)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"code": 0,
+		"data": products,
+	})
 }

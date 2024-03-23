@@ -1,12 +1,15 @@
 package middleware
 
 import (
+	"net/http"
+
 	em "emperror.dev/emperror"
 	"emperror.dev/errors"
 	ee "emperror.dev/errors"
 
-	"github.com/Yu-Qi/GoAuth/api/response"
-	"github.com/Yu-Qi/GoAuth/pkg/log"
+	"github.com/sirupsen/logrus"
+
+	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,12 +20,20 @@ type stackTracer interface {
 // HandlePanic that recovers from any panics and handles the error
 func HandlePanic(c *gin.Context) {
 	handleError := em.ErrorHandlerFunc(func(err error) {
-		log.Error(err.Error())
+		logrus.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Error("Panic occurred")
 		errTracer, ok := err.(stackTracer) // ok is false if errors doesn't implement stackTracer
 		if ok {
-			log.ErrorWithData("stack trace", errTracer.StackTrace())
+			logrus.WithFields(logrus.Fields{
+				"error": errTracer.StackTrace(),
+			}).Error("stack trace")
 		}
-		response.AbortByAny(c, ee.WithStackDepth(err, 10))
+		c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  http.StatusInternalServerError,
+			"code":    code.InternalUnknownError,
+			"message": ee.WithStackDepth(err, 10).Error(),
+		})
 	})
 	defer em.HandleRecover(handleError)
 	c.Next()

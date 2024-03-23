@@ -36,7 +36,18 @@
 
 ## Project Structure
 
+### `api`
+
+- `api` 為主要的服務入口，負責處理請求及回應
+-
+
+### `cmd`
+
+### `domain`
+
 ### `config`
+
+### `test`
 
 ## 所需軟體/服務
 
@@ -51,18 +62,29 @@
 
 ### 執行
 
+1. 建立資料庫
+   以預設 `config/local.sh` 為例，資料庫名稱為 `local`，需要先建立資料庫
+2. 透過指令建立資料表
+
+```shell
+make db-migrate
+```
+
+3. 啟動伺服器
+   以預設 `config/local.sh` 為例，伺服器會在 `localhost:9030` 啟動
+
 ```shell
 make run
 ```
 
-### 使用
+## API 使用
 
 - 註冊帳號
 
 ```shell
 curl 'localhost:9030/register' \
 --header 'Content-Type: application/json' \
---data-raw '{
+--data '{
     "email": "go@com.com",
     "password": "Password1~"
 }'
@@ -71,7 +93,7 @@ curl 'localhost:9030/register' \
 - 驗證帳號
 
 ```shell
-curl --location 'localhost:9030/verify-email' \
+curl 'localhost:9030/verify-email' \
 --header 'Content-Type: application/json' \
 --data '{
     "verification_code": "從螢幕上取得驗證碼"
@@ -81,7 +103,7 @@ curl --location 'localhost:9030/verify-email' \
 - 登入
 
 ```shell
-curl --location 'localhost:9030/login' \
+curl 'localhost:9030/login' \
 --header 'Content-Type: application/json' \
 --data '{
     "email": "go@com.com",
@@ -93,7 +115,7 @@ curl --location 'localhost:9030/login' \
   在 header 中加入 `Authorization` 並帶入登入後取得的 token，並且帶上 `Bearer` 字串
 
 ```shell
-curl --location 'localhost:9030/products/recommendation' \
+curl 'localhost:9030/products/recommendation' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwczovL2FsYW5jaGVuLmNvbSIsImV4cCI6MTcxMTE3ODk0NiwianRpIjoiNTNkOTBlYTktYmI2Ni00YjkwLWJkZjEtMjZkZjgyMmY3M2I3IiwiaWF0IjoxNzExMDkyNTQ2LCJpc3MiOiJBbGFuIGNoZW4iLCJuYmYiOjE3MTEwOTI1NDYsInN1YiI6IjI3MDA2YWE2LWI5NTctNDY0My05MTI5LTQ2NWNiNWYyNDZjYyJ9.QWIQQ3VcZkgJFLrskGDEJk4tAjKSE8RaxmkszBWnEdE'
 ```
 
@@ -107,7 +129,16 @@ curl --location 'localhost:9030/products/recommendation' \
 
 ### 測試結果
 
-以下測試均在相同硬體環境下進行，為加速測試，將快取失效時間設定為 30 秒、測試時間為 2 分鐘
+> 以下測試均在相同硬體環境下進行，為加速測試，將快取失效時間設定為 30 秒、測試時間為 2 分鐘
+
+以 slow query 3s、每秒 5 個 request 來說，在 t~t+3 的時間內總共會有 15 個 request，api 回應速度會是 3s\*15 / 15 = 3s
+
+透過 `single flight` 的處理，有幾個好處:
+
+- 首先是 api 回應速度會是 (3s\*5 + 2s\*5+ 1s\*5)/15=2s，約 30%效能提升
+- 其次是減少資源存取浪費，不管是資料庫資源，或者是第三方 API 使用次數都可以有效提升，從原本 15 次變成 1 次，約提升 93%
+
+以下為實驗數據:
 
 1. 使用快取來減少資料庫存取
    | 總請求數 | 失敗請求數 | 平均回應時間 | 最大回應時間 | 最小回應時間 | 90% 回應時間 | 95% 回應時間 | 99% 回應時間 |

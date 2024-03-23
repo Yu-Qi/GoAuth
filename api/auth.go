@@ -5,11 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/Yu-Qi/GoAuth/api/response"
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/jwt"
 	"github.com/Yu-Qi/GoAuth/pkg/service/accounts"
-	"github.com/Yu-Qi/GoAuth/pkg/util"
 )
 
 type registerParams struct {
@@ -18,23 +16,30 @@ type registerParams struct {
 }
 
 // Register registers a new account
-func Register(ctx *gin.Context) {
+func Register(c *gin.Context) {
 	params := registerParams{}
-	customErr := util.ToGinContextExt(ctx).BindJson(&params)
-	if customErr != nil {
-		response.CustomError(ctx, customErr)
+	if err := c.ShouldBind(&params); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status":  http.StatusBadRequest,
+			"code":    code.ParamIncorrect,
+			"message": "Incorrect parameters",
+		})
 		return
 	}
 
-	customErr = accounts.Register(ctx, &accounts.RegisterParams{
+	customErr := accounts.Register(c, &accounts.RegisterParams{
 		Email:    params.Email,
 		Password: params.Password,
 	})
 	if customErr != nil {
-		response.CustomError(ctx, customErr)
+		c.JSON(customErr.HttpStatus, map[string]interface{}{
+			"status":  customErr.HttpStatus,
+			"code":    customErr.Code,
+			"message": customErr.Error.Error(),
+		})
 		return
 	}
-	response.OK(ctx, nil)
+	c.JSON(http.StatusOK, nil)
 }
 
 type loginParams struct {
@@ -47,34 +52,48 @@ type loginResp struct {
 }
 
 // Login logs in an account with email and password, and returns an access token
-func Login(ctx *gin.Context) {
+func Login(c *gin.Context) {
 	params := loginParams{}
-	customErr := util.ToGinContextExt(ctx).BindJson(&params)
-	if customErr != nil {
-		response.CustomError(ctx, customErr)
+	if err := c.ShouldBind(&params); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status":  http.StatusBadRequest,
+			"code":    code.ParamIncorrect,
+			"message": "Incorrect parameters",
+		})
 		return
 	}
 
-	uid, customErr := accounts.Login(ctx, &accounts.LoginParams{
+	uid, customErr := accounts.Login(c, &accounts.LoginParams{
 		Email:    params.Email,
 		Password: params.Password,
 	})
 	if customErr != nil {
-		response.CustomError(ctx, customErr)
+		c.JSON(customErr.HttpStatus, map[string]interface{}{
+			"status":  customErr.HttpStatus,
+			"code":    customErr.Code,
+			"message": customErr.Error.Error(),
+		})
 		return
 	}
 
 	strat := jwt.NewJwtService()
 	accessToken, err := strat.CreateToken(uid)
 	if err != nil {
-		response.CustomError(ctx, code.NewCustomError(code.CryptoError, http.StatusInternalServerError, err))
+		c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"status":  http.StatusInternalServerError,
+			"code":    code.CryptoError,
+			"message": err,
+		})
 		return
 	}
 
 	resp := loginResp{
 		AccessToken: accessToken,
 	}
-	response.OK(ctx, resp)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"code": 0,
+		"data": resp,
+	})
 }
 
 type verifyEmailParams struct {
@@ -82,18 +101,26 @@ type verifyEmailParams struct {
 }
 
 // VerifyEmail verifies an email
-func VerifyEmail(ctx *gin.Context) {
+func VerifyEmail(c *gin.Context) {
 	params := verifyEmailParams{}
-	customErr := util.ToGinContextExt(ctx).BindJson(&params)
-	if customErr != nil {
-		response.CustomError(ctx, customErr)
-		return
-	}
-	customErr = accounts.VerifyEmail(ctx, params.VerificationCode)
-	if customErr != nil {
-		response.CustomError(ctx, customErr)
+	if err := c.ShouldBind(&params); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status":  http.StatusBadRequest,
+			"code":    code.ParamIncorrect,
+			"message": "Incorrect parameters",
+		})
 		return
 	}
 
-	response.OK(ctx, nil)
+	customErr := accounts.VerifyEmail(c, params.VerificationCode)
+	if customErr != nil {
+		c.JSON(customErr.HttpStatus, map[string]interface{}{
+			"status":  customErr.HttpStatus,
+			"code":    customErr.Code,
+			"message": customErr.Error.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
 }

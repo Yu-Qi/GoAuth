@@ -8,13 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Yu-Qi/GoAuth/pkg/config"
-	customlog "github.com/Yu-Qi/GoAuth/pkg/log"
-
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"gorm.io/plugin/opentelemetry/tracing"
+
+	"github.com/Yu-Qi/GoAuth/pkg/config"
 )
 
 var database *gorm.DB
@@ -61,10 +60,7 @@ func initialize() {
 		),
 	})
 	if err != nil {
-		customlog.Fatalf("failed to connect database: %v", err)
-	}
-	if err = database.Use(tracing.NewPlugin()); err != nil {
-		customlog.Fatalf("failed to use tracing plugin: %v", err)
+		logrus.Fatalf("failed to connect database: %v", err)
 	}
 
 }

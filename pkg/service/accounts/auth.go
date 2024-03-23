@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/Yu-Qi/GoAuth/domain"
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/db"
 	"github.com/Yu-Qi/GoAuth/pkg/email"
-	"github.com/Yu-Qi/GoAuth/pkg/log"
 	"github.com/Yu-Qi/GoAuth/pkg/service/crypto"
 	"github.com/Yu-Qi/GoAuth/pkg/util"
 )
@@ -23,10 +24,10 @@ type RegisterParams struct {
 // Register registers a new account
 func Register(ctx context.Context, account *RegisterParams) (customErr *code.CustomError) {
 	uid := util.UUID()
-	log.DebugWithDataCtx(ctx, "Register", map[string]interface{}{
+	logrus.WithFields(logrus.Fields{
 		"uid":   uid,
 		"email": account.Email,
-	})
+	}).Debug("Panic occurred")
 
 	// validate email
 	if !util.ValidateEmail(account.Email) {
@@ -38,9 +39,9 @@ func Register(ctx context.Context, account *RegisterParams) (customErr *code.Cus
 	}
 	hashedPassword, err := util.GenerateBcryptPassword(account.Password)
 	if err != nil {
-		log.WarningWithDataCtx(ctx, "Register, GenerateBcryptPassword", map[string]interface{}{
-			"error": err,
-		})
+		logrus.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Warn("Register, GenerateBcryptPassword")
 		return
 	}
 
