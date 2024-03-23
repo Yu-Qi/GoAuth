@@ -3,6 +3,7 @@ package products
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,13 +14,18 @@ import (
 )
 
 const (
-	ProductRecommendationCacheTTLSec = 60 * 10
+	// ProductRecommendationCacheTTLSec = 60 * 10 //TODO:
+	ProductRecommendationCacheTTLSec = 30
 )
 
 // GetRecommendations gets product recommendations from cache or db
 func GetRecommendations(ctx context.Context) ([]domain.Product, *code.CustomError) {
+	fmt.Println(time.Now(), "GetRecommendations")
+
 	// if hit cache
 	if cache.Exists(ctx, cache.CacheKeyProductRecommendation) {
+		fmt.Println(time.Now(), "cache.Exists")
+
 		v, err := cache.Get(ctx, cache.CacheKeyProductRecommendation)
 		if err != nil {
 			return nil, code.NewCustomError(code.CacheError, http.StatusInternalServerError, err)
@@ -31,6 +37,7 @@ func GetRecommendations(ctx context.Context) ([]domain.Product, *code.CustomErro
 		}
 		return products, nil
 	}
+	fmt.Println(time.Now(), "not hit cache!!!")
 
 	// if not hit cache, get from db and set cache
 	products, customErr := db.GetProductRecommendations(ctx)
