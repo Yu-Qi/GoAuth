@@ -193,4 +193,5 @@ make go-test
 ### TODO
 
 - [ ] 當 redis 資料失效時，避免併發的請求同時向資料庫取得資料
-      密碼從 gcp secret manager 等服務中取得
+- [ ] 密碼從 gcp secret manager 等服務中取得，需要兼顧安全性以及開發效率
+- [ ] 對外 API 要有 rate limit 限制，避免惡意攻擊
