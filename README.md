@@ -127,6 +127,15 @@ curl 'localhost:9030/products/recommendation' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJodHRwczovL2FsYW5jaGVuLmNvbSIsImV4cCI6MTcxMTE3ODk0NiwianRpIjoiNTNkOTBlYTktYmI2Ni00YjkwLWJkZjEtMjZkZjgyMmY3M2I3IiwiaWF0IjoxNzExMDkyNTQ2LCJpc3MiOiJBbGFuIGNoZW4iLCJuYmYiOjE3MTEwOTI1NDYsInN1YiI6IjI3MDA2YWE2LWI5NTctNDY0My05MTI5LTQ2NWNiNWYyNDZjYyJ9.QWIQQ3VcZkgJFLrskGDEJk4tAjKSE8RaxmkszBWnEdE'
 ```
 
+## 自動化測試
+
+針對 Api level 的測試，使用了 Go 的 testing 套件，來確保每個 API 的正確性符合驗收標準
+測試指令
+
+```shell
+make go-test
+```
+
 ## 效能測試
 
 使用工具為 locust 測試，透過介面化的方式分析時間軸上的效能，觀察在快取失效的情況下，服務的效能表現

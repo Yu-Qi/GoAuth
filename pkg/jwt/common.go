@@ -13,7 +13,7 @@ var (
 func init() {
 	jwtTokenSecret = config.GetString("JWT_TOKEN_SECRET")
 	if jwtTokenSecret == "" {
-		panic("JWT_SECRET_KEY is empty")
+		panic("JWT_TOKEN_SECRET is empty")
 	}
 }
 

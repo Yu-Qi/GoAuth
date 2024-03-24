@@ -17,11 +17,13 @@ const (
 	InvalidSignature = 1006
 	JsonMarshalError = 1007
 	JsonUnmarshalErr = 1008
+	TokenExpired     = 1009
 	// business errors
 	AccountAlreadyExists       = 2000
 	AccountOrPasswordIncorrect = 2001
 	AccountNotActive           = 2002
 	AccountAlreadyActive       = 2003
+	SendEmailError             = 2004
 	// internal errors
 	CryptoError          = 3000
 	InternalUnknownError = 3999

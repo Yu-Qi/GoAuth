@@ -59,7 +59,11 @@ func Register(ctx context.Context, account *RegisterParams) (customErr *code.Cus
 		return code.NewCustomError(code.CryptoError, http.StatusInternalServerError, err)
 	}
 
-	email.GetService().SendEmail(account.Email, "Verification Code", verificationCode)
+	err = email.GetService().SendEmail(account.Email, "Verification Code", verificationCode)
+	if err != nil {
+		return code.NewCustomError(code.SendEmailError, http.StatusInternalServerError, err)
+	}
+
 	return nil
 }
 

@@ -26,15 +26,15 @@ func (s *TokenJwtStrategy) Parse(tokenString string) (any, *code.CustomError) {
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(s.secretKey), nil
 	})
-	if time.Now().Unix() > claims.ExpiresAt {
-		return claimsI, code.NewCustomError(code.TokenInValid, http.StatusUnauthorized, fmt.Errorf("Token expired"))
-	}
 	if err != nil {
 		return claimsI, code.NewCustomError(code.TokenInValid, http.StatusUnauthorized, err)
 	}
 
 	if !token.Valid {
 		return claimsI, code.NewCustomError(code.TokenInValid, http.StatusUnauthorized, fmt.Errorf("Invalid JWT Token"))
+	}
+	if time.Now().Unix() > claims.ExpiresAt {
+		return claimsI, code.NewCustomError(code.TokenExpired, http.StatusUnauthorized, fmt.Errorf("Token expired"))
 	}
 
 	return claimsI, nil

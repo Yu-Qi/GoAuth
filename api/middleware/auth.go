@@ -17,7 +17,7 @@ func AuthToken(c *gin.Context) {
 
 	parts := strings.SplitN(authorization, " ", 2)
 	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		c.JSON(http.StatusUnauthorized, map[string]interface{}{
+		c.AbortWithStatusJSON(http.StatusUnauthorized, map[string]interface{}{
 			"status":  http.StatusUnauthorized,
 			"code":    code.TokenInValid,
 			"message": "invalid auth token",
@@ -28,7 +28,7 @@ func AuthToken(c *gin.Context) {
 	strat := jwtSvc.NewJwtService()
 	claimsI, customErr := strat.Parse(token)
 	if customErr != nil {
-		c.JSON(customErr.HttpStatus, map[string]interface{}{
+		c.AbortWithStatusJSON(customErr.HttpStatus, map[string]interface{}{
 			"status":  customErr.HttpStatus,
 			"code":    customErr.Code,
 			"message": customErr.Error.Error(),

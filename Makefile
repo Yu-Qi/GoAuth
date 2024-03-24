@@ -10,3 +10,7 @@ live:
 db-migrate:
 	source config/local.sh && \
 	go run cmd/db-migrate/main.go
+
+go-test:
+	source config/local.sh && \
+	go test -v ./...

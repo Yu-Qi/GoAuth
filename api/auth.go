@@ -18,7 +18,7 @@ type registerParams struct {
 // Register registers a new account
 func Register(c *gin.Context) {
 	params := registerParams{}
-	if err := c.ShouldBind(&params); err != nil {
+	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  http.StatusBadRequest,
 			"code":    code.ParamIncorrect,
@@ -54,7 +54,7 @@ type loginResp struct {
 // Login logs in an account with email and password, and returns an access token
 func Login(c *gin.Context) {
 	params := loginParams{}
-	if err := c.ShouldBind(&params); err != nil {
+	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  http.StatusBadRequest,
 			"code":    code.ParamIncorrect,
@@ -103,7 +103,7 @@ type verifyEmailParams struct {
 // VerifyEmail verifies an email
 func VerifyEmail(c *gin.Context) {
 	params := verifyEmailParams{}
-	if err := c.ShouldBind(&params); err != nil {
+	if err := c.ShouldBindJSON(&params); err != nil {
 		c.JSON(http.StatusBadRequest, map[string]interface{}{
 			"status":  http.StatusBadRequest,
 			"code":    code.ParamIncorrect,
