@@ -39,7 +39,9 @@ func Register(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"code": 0,
+	})
 }
 
 type loginParams struct {
@@ -122,5 +124,7 @@ func VerifyEmail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"code": 0,
+	})
 }
