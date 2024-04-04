@@ -1,19 +1,14 @@
 package util
 
-import "regexp"
+import (
+	"regexp"
+)
 
 var (
 	uppercasePattern   = regexp.MustCompile(`[A-Z]`)
 	lowercasePattern   = regexp.MustCompile(`[a-z]`)
 	specialCharPattern = regexp.MustCompile(`[\(\)\[\]\{\}<>+\-*/?,.:;"'_\\|~` + "`" + `!@#$%^&=]`)
 )
-
-// ValidateEmail check if it is in the correct format
-func ValidateEmail(email string) bool {
-	var emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-
-	return emailRegex.MatchString(email)
-}
 
 // ValidatePassword check if it matches the requirement
 func ValidatePassword(password string) bool {

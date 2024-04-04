@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,21 +9,30 @@ import (
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/jwt"
 	"github.com/Yu-Qi/GoAuth/pkg/service/accounts"
+	"github.com/Yu-Qi/GoAuth/pkg/util"
 )
 
 type registerParams struct {
-	Email    string `json:"email" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
+}
+
+func (r *registerParams) AfterValidate() error {
+	if valid := util.ValidatePassword(r.Password); !valid {
+		return fmt.Errorf("invalid password")
+	}
+
+	return nil
 }
 
 // Register registers a new account
 func Register(c *gin.Context) {
 	params := registerParams{}
-	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"status":  http.StatusBadRequest,
-			"code":    code.ParamIncorrect,
-			"message": "Incorrect parameters",
+	if customErr := util.ToGinContextExt(c).BindJson(&params); customErr != nil {
+		c.JSON(customErr.HttpStatus, map[string]interface{}{
+			"status":  customErr.HttpStatus,
+			"code":    customErr.Code,
+			"message": customErr.Error.Error(),
 		})
 		return
 	}
@@ -56,11 +66,11 @@ type loginResp struct {
 // Login logs in an account with email and password, and returns an access token
 func Login(c *gin.Context) {
 	params := loginParams{}
-	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"status":  http.StatusBadRequest,
-			"code":    code.ParamIncorrect,
-			"message": "Incorrect parameters",
+	if customErr := util.ToGinContextExt(c).BindJson(&params); customErr != nil {
+		c.JSON(customErr.HttpStatus, map[string]interface{}{
+			"status":  customErr.HttpStatus,
+			"code":    customErr.Code,
+			"message": customErr.Error.Error(),
 		})
 		return
 	}
@@ -105,11 +115,11 @@ type verifyEmailParams struct {
 // VerifyEmail verifies an email
 func VerifyEmail(c *gin.Context) {
 	params := verifyEmailParams{}
-	if err := c.ShouldBindJSON(&params); err != nil {
-		c.JSON(http.StatusBadRequest, map[string]interface{}{
-			"status":  http.StatusBadRequest,
-			"code":    code.ParamIncorrect,
-			"message": "Incorrect parameters",
+	if customErr := util.ToGinContextExt(c).BindJson(&params); customErr != nil {
+		c.JSON(customErr.HttpStatus, map[string]interface{}{
+			"status":  customErr.HttpStatus,
+			"code":    customErr.Code,
+			"message": customErr.Error.Error(),
 		})
 		return
 	}

@@ -29,14 +29,6 @@ func Register(ctx context.Context, account *RegisterParams) (customErr *code.Cus
 		"email": account.Email,
 	}).Debug("Panic occurred")
 
-	// validate email
-	if !util.ValidateEmail(account.Email) {
-		return code.NewCustomError(code.ParamIncorrect, http.StatusBadRequest, fmt.Errorf("invalid email"))
-	}
-	// validate password
-	if !util.ValidatePassword(account.Password) {
-		return code.NewCustomError(code.ParamIncorrect, http.StatusBadRequest, fmt.Errorf("invalid password"))
-	}
 	hashedPassword, err := util.GenerateBcryptPassword(account.Password)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
