@@ -9,8 +9,7 @@ import (
 
 // GetRecommendations returns a list of recommended products
 func GetRecommendations(c *gin.Context) {
-	products, customErr := products.GetRecommendations(c)
-
+	products, customErr := products.GetRecommendations(c, c.GetString("uid"))
 	if customErr != nil {
 		c.JSON(customErr.HttpStatus, map[string]interface{}{
 			"status":  customErr.HttpStatus,

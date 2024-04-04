@@ -23,7 +23,12 @@ const (
 )
 
 // GetRecommendations gets product recommendations from cache or db
-func GetRecommendations(ctx context.Context) (products []domain.Product, customErr *code.CustomError) {
+func GetRecommendations(ctx context.Context, uid string) (products []domain.Product, customErr *code.CustomError) {
+	// check user exists and is active
+	if customErr := db.UserExists(ctx, uid); customErr != nil {
+		return nil, customErr
+	}
+
 	// if hit cache
 	if cache.Exists(ctx, cache.CacheKeyProductRecommendation) {
 		v, err := cache.Get(ctx, cache.CacheKeyProductRecommendation)

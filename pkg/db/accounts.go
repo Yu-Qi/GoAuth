@@ -8,6 +8,7 @@ import (
 	"github.com/Yu-Qi/GoAuth/domain"
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/db/model"
+	"gorm.io/gorm"
 )
 
 // CreateAccountParams is the parameters for creating an account
@@ -57,26 +58,55 @@ func Login(ctx context.Context, params *domain.Account) (*domain.Account, *code.
 
 // ActiveAccount activates an account
 func ActiveAccount(ctx context.Context, uid string) *code.CustomError {
+	httpStatus := http.StatusInternalServerError
+	errCode := code.DBError
+	err := GetWith(ctx).Transaction(func(tx *gorm.DB) error {
+		err := tx.Where("uid = ?", uid).
+			First(&model.Account{}).Error
+		if IsRecordNotFoundError(err) {
+			httpStatus = http.StatusBadRequest
+			errCode = code.UserNotFound
+			return err
+		} else if err != nil {
+			return err
+		}
+
+		query := GetWith(ctx).
+			Model(&model.Account{}).
+			Where("uid = ?", uid).
+			Update("is_active", true)
+		if query.Error != nil {
+			return err
+		}
+		if query.RowsAffected == 0 {
+			httpStatus = http.StatusBadRequest
+			errCode = code.AccountAlreadyActive
+			return fmt.Errorf("account already active")
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return code.NewCustomError(errCode, httpStatus, err)
+	}
+	return nil
+}
+
+// UserExists checks if a user exists and is active
+func UserExists(ctx context.Context, uid string) *code.CustomError {
+	account := &model.Account{}
 	err := GetWith(ctx).
-		Model(&model.Account{}).
 		Where("uid = ?", uid).
-		First(&model.Account{}).Error
-	if IsRecordNotFoundError(err) {
-		return code.NewCustomError(code.UserNotFound, http.StatusBadRequest, err)
-	} else if err != nil {
+		First(account).Error
+	if err != nil {
+		if IsRecordNotFoundError(err) {
+			return code.NewCustomError(code.UserNotFound, http.StatusNotFound, err)
+		}
 		return code.NewCustomError(code.DBError, http.StatusInternalServerError, err)
 	}
-
-	query := GetWith(ctx).
-		Model(&model.Account{}).
-		Where("uid = ?", uid).
-		Update("is_active", true)
-	if query.Error != nil {
-		return code.NewCustomError(code.DBError, http.StatusInternalServerError, query.Error)
+	if !account.IsActive {
+		return code.NewCustomError(code.AccountNotActive, http.StatusBadRequest, fmt.Errorf("account not active"))
 	}
-	if query.RowsAffected == 0 {
-		return code.NewCustomError(code.AccountAlreadyActive, http.StatusBadRequest, fmt.Errorf("account already active"))
-	}
-
 	return nil
 }
