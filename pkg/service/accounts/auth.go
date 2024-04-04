@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -25,7 +26,7 @@ func Register(ctx context.Context, account *RegisterParams, verificationSvc doma
 	logrus.WithFields(logrus.Fields{
 		"uid":   uid,
 		"email": account.Email,
-	}).Debug("Panic occurred")
+	}).Debug("Registering new account")
 
 	hashedPassword, err := util.GenerateBcryptPassword(account.Password)
 	if err != nil {
@@ -46,13 +47,27 @@ func Register(ctx context.Context, account *RegisterParams, verificationSvc doma
 
 	verificationCode, err := verificationSvc.GenerateCode(uid)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"uid":   uid,
+			"email": account.Email,
+			"error": err.Error(),
+		}).Error("Register, already registered, but failed to generate verification code")
 		return code.NewCustomError(code.CryptoError, http.StatusInternalServerError, err)
 	}
 
 	err = sendEmailSvc.SendEmail(account.Email, "Verification Code", verificationCode)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"uid":   uid,
+			"email": account.Email,
+			"error": err.Error(),
+		}).Error("Register, already registered, but failed to send email")
 		return code.NewCustomError(code.SendEmailError, http.StatusInternalServerError, err)
 	}
+	// update sent_at
+	db.UpdateAccount(ctx, uid, &domain.UpdateAccountParams{
+		SentAt: util.Ptr(time.Now()),
+	})
 
 	return nil
 }

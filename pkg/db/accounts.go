@@ -9,6 +9,7 @@ import (
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/db/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // CreateAccountParams is the parameters for creating an account
@@ -107,6 +108,39 @@ func UserExists(ctx context.Context, uid string) *code.CustomError {
 	}
 	if !account.IsActive {
 		return code.NewCustomError(code.AccountNotActive, http.StatusBadRequest, fmt.Errorf("account not active"))
+	}
+	return nil
+}
+
+// UpdateAccount updates an account
+func UpdateAccount(ctx context.Context, uid string, params *domain.UpdateAccountParams) *code.CustomError {
+	httpStatus := http.StatusInternalServerError
+	errCode := code.DBError
+	err := GetWith(ctx).Transaction(func(tx *gorm.DB) error {
+		account := model.Account{}
+		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("uid = ?", uid).
+			First(&account).Error
+		if err != nil {
+			if IsRecordNotFoundError(err) {
+				httpStatus = http.StatusBadRequest
+				errCode = code.UserNotFound
+			}
+			return err
+		}
+		// check params
+		if params.SentAt != nil {
+			account.SentAt = params.SentAt
+		}
+		// update account
+		err = tx.Updates(&account).Error
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return code.NewCustomError(errCode, httpStatus, err)
 	}
 	return nil
 }
