@@ -10,8 +10,6 @@ import (
 	"github.com/Yu-Qi/GoAuth/domain"
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/db"
-	"github.com/Yu-Qi/GoAuth/pkg/email"
-	"github.com/Yu-Qi/GoAuth/pkg/service/crypto"
 	"github.com/Yu-Qi/GoAuth/pkg/util"
 )
 
@@ -22,7 +20,7 @@ type RegisterParams struct {
 }
 
 // Register registers a new account
-func Register(ctx context.Context, account *RegisterParams) (customErr *code.CustomError) {
+func Register(ctx context.Context, account *RegisterParams, verificationSvc domain.VerificationCodeService, sendEmailSvc domain.SendEmailService) (customErr *code.CustomError) {
 	uid := util.UUID()
 	logrus.WithFields(logrus.Fields{
 		"uid":   uid,
@@ -46,12 +44,12 @@ func Register(ctx context.Context, account *RegisterParams) (customErr *code.Cus
 		return customErr
 	}
 
-	verificationCode, err := crypto.GetService().GenerateCode(uid)
+	verificationCode, err := verificationSvc.GenerateCode(uid)
 	if err != nil {
 		return code.NewCustomError(code.CryptoError, http.StatusInternalServerError, err)
 	}
 
-	err = email.GetService().SendEmail(account.Email, "Verification Code", verificationCode)
+	err = sendEmailSvc.SendEmail(account.Email, "Verification Code", verificationCode)
 	if err != nil {
 		return code.NewCustomError(code.SendEmailError, http.StatusInternalServerError, err)
 	}
@@ -60,8 +58,8 @@ func Register(ctx context.Context, account *RegisterParams) (customErr *code.Cus
 }
 
 // VerifyEmail verifies the email
-func VerifyEmail(ctx context.Context, verificationCode string) (customErr *code.CustomError) {
-	uid, err := crypto.GetService().VerifyCode(verificationCode)
+func VerifyEmail(ctx context.Context, verificationCode string, verificationSvc domain.VerificationCodeService) (customErr *code.CustomError) {
+	uid, err := verificationSvc.VerifyCode(verificationCode)
 	if err != nil {
 		return code.NewCustomError(code.CryptoError, http.StatusBadRequest, err)
 	}

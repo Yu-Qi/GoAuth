@@ -11,8 +11,8 @@ import (
 
 	"github.com/Yu-Qi/GoAuth/pkg/db"
 	"github.com/Yu-Qi/GoAuth/pkg/db/model"
-	"github.com/Yu-Qi/GoAuth/pkg/email"
 	"github.com/Yu-Qi/GoAuth/pkg/service/crypto"
+	"github.com/Yu-Qi/GoAuth/pkg/service/email"
 	"github.com/Yu-Qi/GoAuth/pkg/util"
 )
 

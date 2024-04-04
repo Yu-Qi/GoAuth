@@ -9,6 +9,8 @@ import (
 	"github.com/Yu-Qi/GoAuth/pkg/code"
 	"github.com/Yu-Qi/GoAuth/pkg/jwt"
 	"github.com/Yu-Qi/GoAuth/pkg/service/accounts"
+	"github.com/Yu-Qi/GoAuth/pkg/service/crypto"
+	"github.com/Yu-Qi/GoAuth/pkg/service/email"
 	"github.com/Yu-Qi/GoAuth/pkg/util"
 )
 
@@ -40,7 +42,7 @@ func Register(c *gin.Context) {
 	customErr := accounts.Register(c, &accounts.RegisterParams{
 		Email:    params.Email,
 		Password: params.Password,
-	})
+	}, crypto.GetService(), email.GetService())
 	if customErr != nil {
 		c.JSON(customErr.HttpStatus, map[string]interface{}{
 			"status":  customErr.HttpStatus,
@@ -124,7 +126,7 @@ func VerifyEmail(c *gin.Context) {
 		return
 	}
 
-	customErr := accounts.VerifyEmail(c, params.VerificationCode)
+	customErr := accounts.VerifyEmail(c, params.VerificationCode, crypto.GetService())
 	if customErr != nil {
 		c.JSON(customErr.HttpStatus, map[string]interface{}{
 			"status":  customErr.HttpStatus,

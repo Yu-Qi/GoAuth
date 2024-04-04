@@ -7,8 +7,8 @@ import (
 
 	"github.com/Yu-Qi/GoAuth/api"
 	"github.com/Yu-Qi/GoAuth/api/middleware"
-	"github.com/Yu-Qi/GoAuth/pkg/email"
 	"github.com/Yu-Qi/GoAuth/pkg/service/crypto"
+	"github.com/Yu-Qi/GoAuth/pkg/service/email"
 )
 
 func main() {
@@ -17,9 +17,7 @@ func main() {
 		middleware.HandlePanic,
 	)
 
-	verificationCodeExpireSec := 600
-	crypto.InitService("your-strong-password", "your-salt-string", 4096, verificationCodeExpireSec)
-	email.InitService(email.NewPrintEmailService())
+	initService()
 
 	registerAccountAPI(r)
 	registerProductAPI(r)
@@ -37,4 +35,10 @@ func registerAccountAPI(r *gin.Engine) {
 func registerProductAPI(r *gin.Engine) {
 	product := r.Group("/products", middleware.AuthToken)
 	product.GET("/recommendation", api.GetRecommendations)
+}
+
+func initService() {
+	verificationCodeExpireSec := 600
+	crypto.InitService("your-strong-password", "your-salt-string", 4096, verificationCodeExpireSec)
+	email.InitService(email.NewPrintEmailService())
 }
